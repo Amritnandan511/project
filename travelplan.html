@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Anweshak Travel Planner</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;700&display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-image: url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?auto=format&fit=crop&w=1950&q=80');
+      background-size: cover;
+      background-attachment: fixed;
+      background-position: center;
+      color: #000;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      color: #000;
+    }
+
+    .navbar, footer {
+      background-color: #2874f0 !important;
+      color: #fff !important;
+    }
+
+    h1, h2, h3, h4 {
+      font-weight: 700;
+    }
+
+    input, .form-control {
+      background-color: rgba(240, 240, 240, 1);
+      color: #333;
+      border: 1px solid #ccc;
+    }
+
+    .form-control::placeholder {
+      color: #888;
+    }
+
+    .btn-primary {
+      background-color: #ff9f00;
+      border: none;
+    }
+
+    .btn-outline-primary {
+      border-color: #2874f0;
+      color: #2874f0;
+    }
+
+    .btn-outline-primary:hover {
+      background-color: #2874f0;
+      color: #fff;
+    }
+
+    iframe {
+      width: 100%;
+      height: 300px;
+      border: none;
+      border-radius: 10px;
+    }
+
+    #activityList li {
+      background-color: #f1f1f1;
+      border: none;
+      margin-bottom: 8px;
+      border-radius: 8px;
+    }
+
+    .photo-gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+
+    .photo-gallery img {
+      width: 300px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: 768px) {
+      .glass {
+        padding: 1rem;
+      }
+
+      .photo-gallery img {
+        width: 90%;
+        height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="#">Anweshak</a>
+      <input class="form-control w-50" type="search" placeholder="Search destination" />
+    </div>
+  </nav>
+
+  <!-- Homepage Section -->
+  <section id="homepageSection" class="container">
+    <div class="glass text-center my-5">
+      <h1>Welcome to Anweshak</h1>
+      <p>Your AI-powered personalized travel planner</p>
+    </div>
+
+    <div class="glass text-center my-4">
+      <h3>Key Features</h3>
+      <div class="row">
+        <div class="col-md-4">🌍 Smart Destination Planning</div>
+        <div class="col-md-4">💰 Budget Optimization</div>
+        <div class="col-md-4">🗺️ Real-time Alerts & Maps</div>
+      </div>
+    </div>
+
+    <div class="glass my-4">
+      <h4>Plan Your Trip</h4>
+      <form id="tripForm">
+        <div class="mb-3">
+          <label>Destination</label>
+          <input type="text" class="form-control" id="destination" required />
+        </div>
+        <div class="mb-3">
+          <label>Budget</label>
+          <input type="number" class="form-control" id="budget" required />
+        </div>
+        <div class="mb-3">
+          <label>Days</label>
+          <input type="number" class="form-control" id="days" required />
+        </div>
+        <button class="btn btn-primary" type="submit">Generate Itinerary</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Itinerary Section -->
+  <section class="container" id="itinerarySection" style="display: none;">
+    <div class="glass">
+      <h2>Your Travel Itinerary</h2>
+      <div id="itinerary"></div>
+      <div id="activities" class="my-4">
+        <h4>Popular Activities</h4>
+        <ul id="activityList" class="list-group"></ul>
+      </div>
+      <div id="map" class="my-4">
+        <h5>Explore on Google Maps:</h5>
+        <iframe id="mapFrame"></iframe>
+        <p><a id="mapLink" href="#" target="_blank" class="btn btn-outline-primary mt-2">Open in Google Maps</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Alerts Section -->
+  <section class="container" id="alertsSection" style="display: none;">
+    <div class="glass">
+      <div class="alert alert-info" id="alertsBox">Fetching weather info...</div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="text-center p-3 mt-5">
+    <p>© 2025 Anweshak | Contact: travel@anweshak.com</p>
+  </footer>
+
+  <!-- Photo Gallery -->
+  <section class="container">
+    <div class="glass">
+      <h3 class="text-center">Top Tourist Spots</h3>
+      <div class="photo-gallery" id="photoGallery"></div>
+    </div>
+  </section>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("tripForm");
+      const itineraryDiv = document.getElementById("itinerary");
+      const itinerarySection = document.getElementById("itinerarySection");
+      const homepageSection = document.getElementById("homepageSection");
+      const alertsSection = document.getElementById("alertsSection");
+      const alertsBox = document.getElementById("alertsBox");
+      const mapFrame = document.getElementById("mapFrame");
+      const mapLink = document.getElementById("mapLink");
+      const activityList = document.getElementById("activityList");
+      const photoGallery = document.getElementById("photoGallery");
+
+      const mockActivities = {
+        delhi: ["Red Fort Visit", "India Gate Walk", "Chandni Chowk Food Tour"],
+        paris: ["Eiffel Tower", "Louvre Museum", "Seine River Cruise"],
+        london: ["London Eye", "British Museum", "Buckingham Palace"]
+      };
+
+      const mockPhotos = {
+        delhi: [
+          "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/India_Gate_in_New_Delhi_03-2016_img3.jpg/640px-India_Gate_in_New_Delhi_03-2016_img3.jpg",
+          "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Red_Fort_2017.jpg/640px-Red_Fort_2017.jpg",
+          "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Humayun%27s_Tomb_3.jpg/640px-Humayun%27s_Tomb_3.jpg"
+        ]
+      };
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const destination = document.getElementById("destination").value.trim().toLowerCase();
+        const budget = document.getElementById("budget").value.trim();
+        const days = document.getElementById("days").value.trim();
+
+        if (!destination || !budget || !days) return;
+
+        homepageSection.style.display = "none";
+        itinerarySection.style.display = "block";
+        alertsSection.style.display = "block";
+
+        itineraryDiv.innerHTML = `
+          <h4>Destination: ${destination.charAt(0).toUpperCase() + destination.slice(1)}</h4>
+          <p>Budget: ₹${budget}</p>
+          <p>Days: ${days}</p>
+          <ul>
+            ${Array.from({ length: days }, (_, i) => `<li>Day ${i + 1}: Activities TBD...</li>`).join("")}
+          </ul>
+        `;
+
+        const encodedDestination = encodeURIComponent(destination);
+        mapFrame.src = `https://www.google.com/maps?q=${encodedDestination}&output=embed`;
+        mapLink.href = `https://www.google.com/maps/search/?api=1&query=${encodedDestination}`;
+
+        const activities = mockActivities[destination] || ["Explore local spots", "Try local cuisine", "Visit markets"];
+        activityList.innerHTML = activities.map(act => `<li class="list-group-item">✅ ${act}</li>`).join("");
+
+        const weatherApiKey = "2b03c9752e7af8220142d4768b56f810";
+        fetch(`https://api.openweathermap.org/data/2.5/weather?q=${destination}&appid=${weatherApiKey}&units=metric`)
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.weather) {
+              alertsBox.classList.replace("alert-info", "alert-success");
+              alertsBox.textContent = `🌤️ Weather in ${destination}: ${data.weather[0].description}, ${data.main.temp}°C`;
+            } else {
+              throw new Error("Weather not found");
+            }
+          })
+          .catch(() => {
+            alertsBox.classList.replace("alert-info", "alert-warning");
+            alertsBox.textContent = `⚠️ Unable to fetch real-time weather for "${destination}".`;
+          });
+
+        photoGallery.innerHTML = (mockPhotos[destination] || []).map(link => `<img src="${link}" alt="${destination} place">`).join("");
+      });
+    });
+  </script>
+</body>
+</html>
